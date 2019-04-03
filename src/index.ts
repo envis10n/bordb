@@ -1,11 +1,11 @@
-import BorCollection from "./collection";
+import Collection from "./collection";
 import fs from "fs-extra";
 import path from "path";
 import cbor from "cbor";
 import { promisify as _p } from "util";
 
 class BorDB {
-    private collections: Map<string, BorCollection> = new Map();
+    private collections: Map<string, Collection> = new Map();
     private manifestPath: string;
     constructor(public readonly root: string, private saveInterval: number = 30000) {
         if (!path.isAbsolute(root)) {
@@ -19,7 +19,7 @@ class BorDB {
                 const colPath = path.join(this.root, "collections", colname + ".collection");
                 if (fs.existsSync(colPath)) {
                     const colData: IBorCollectionStore = cbor.decode(fs.readFileSync(colPath));
-                    const collection: BorCollection = BorCollection.fromStore(colData);
+                    const collection: Collection = Collection.fromStore(colData);
                     this.collections.set(collection.name, collection);
                 }
             }
@@ -32,10 +32,10 @@ class BorDB {
             this.startSave();
         }
     }
-    public collection(name: string): BorCollection {
+    public collection(name: string): Collection {
         let collection = this.collections.get(name);
         if (!collection) {
-            collection = new BorCollection(name);
+            collection = new Collection(name);
             this.collections.set(collection.name, collection);
         }
         return collection;
@@ -57,6 +57,31 @@ class BorDB {
             this.startSave();
         }, this.saveInterval);
     }
+}
+
+namespace BorDB {
+    export const BorCollection = Collection;
+    export declare interface IObjectAny {
+        [key: string]: any;
+    }
+    export declare interface IBorDBOptions {
+        saveInterval: number;
+    }
+    export declare interface IBorDBManifest {
+        savedAt: number;
+        collections: string[];
+    }
+    export declare interface IBorCollectionStore {
+        [key: string]: any;
+        name: string;
+        data: IBorDoc[];
+        savedAt: number;
+    }
+    export declare interface IBorDoc {
+        [key: string]: any;
+        _key: string;
+    }
+    export declare type Option<T> = T | null;
 }
 
 export = BorDB;
