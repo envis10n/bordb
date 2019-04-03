@@ -2,6 +2,7 @@
   "name": "bordb",
   "version": "0.0.1",
   "main": "dist/index.js",
+  "types": "src/index.ts",
   "author": "envis10n",
   "license": "MIT",
   "dependencies": {
@@ -14,5 +15,8 @@
     "@types/cbor": "^2.0.0",
     "tslint": "^5.15.0",
     "typescript": "^3.4.1"
+  },
+  "scripts": {
+    "install": "npm i typescript --save-dev && tsc"
   }
 }
