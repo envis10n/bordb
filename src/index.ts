@@ -17,7 +17,14 @@ class BorDB {
         fs.ensureDirSync(root); // Ensure the directory exists.
         if (fs.existsSync(this.manifestPath)) {
             const manifest = cbor.decode(fs.readFileSync(this.manifestPath));
-            this.load(manifest);
+            for (const colname of manifest.collections) {
+                const colPath = path.join(this.root, "collections", colname + ".collection");
+                if (fs.existsSync(colPath)) {
+                    const colData: IBorCollectionStore = cbor.decode(fs.readFileSync(colPath));
+                    const collection: BorCollection = BorCollection.fromStore(colData);
+                    this.collections.set(collection.name, collection);
+                }
+            }
         } else {
             fs.ensureFileSync(this.manifestPath);
             fs.writeFileSync(this.manifestPath, cbor.encode({
@@ -51,17 +58,6 @@ class BorDB {
             await fs.writeFile(this.manifestPath, cbor.encode(manifest));
             this.startSave();
         }, this.saveInterval);
-    }
-    private async load(manifest: IBorDBManifest) {
-        for (const colname of manifest.collections) {
-            const colPath = path.join(this.root, "collections", colname + ".collection");
-            if (await exists(colPath)) {
-                const colData: IBorCollectionStore = cbor.decode(await fs.readFile(colPath));
-                const collection: BorCollection = BorCollection.fromStore(colData);
-                this.collections.set(collection.name, collection);
-            }
-        }
-        this.startSave();
     }
 }
 
