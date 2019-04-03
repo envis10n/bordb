@@ -19,6 +19,11 @@ class BorDB {
             const manifest = cbor.decode(fs.readFileSync(this.manifestPath));
             this.load(manifest);
         } else {
+            fs.ensureFileSync(this.manifestPath);
+            fs.writeFileSync(this.manifestPath, cbor.encode({
+                savedAt: Date.now(),
+                collections: [],
+            }));
             this.startSave();
         }
     }
