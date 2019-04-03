@@ -4,8 +4,6 @@ import path from "path";
 import cbor from "cbor";
 import { promisify as _p } from "util";
 
-const exists = _p(fs.exists);
-
 class BorDB {
     private collections: Map<string, BorCollection> = new Map();
     private manifestPath: string;
