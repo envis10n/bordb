@@ -53,7 +53,6 @@ class BorDB {
         }
         await fs.ensureFile(this.manifestPath);
         await fs.writeFile(this.manifestPath, cbor.encode(manifest));
-        this.startSave();
     }
     private startSave() {
         setTimeout(async () => {
