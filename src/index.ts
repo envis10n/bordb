@@ -40,20 +40,24 @@ class BorDB {
         }
         return collection;
     }
+    public async save() {
+        const collections = Array.from(this.collections).map((e) => e[0]);
+        const manifest: IBorDBManifest = {
+            savedAt: Date.now(),
+            collections,
+        };
+        for (const collection of Array.from(this.collections).map((e) => e[1])) {
+            const colPath = path.join(this.root, "collections", collection.name + ".collection");
+            await fs.ensureFile(colPath);
+            await fs.writeFile(colPath, collection.serialize());
+        }
+        await fs.ensureFile(this.manifestPath);
+        await fs.writeFile(this.manifestPath, cbor.encode(manifest));
+        this.startSave();
+    }
     private startSave() {
         setTimeout(async () => {
-            const collections = Array.from(this.collections).map((e) => e[0]);
-            const manifest: IBorDBManifest = {
-                savedAt: Date.now(),
-                collections,
-            };
-            for (const collection of Array.from(this.collections).map((e) => e[1])) {
-                const colPath = path.join(this.root, "collections", collection.name + ".collection");
-                await fs.ensureFile(colPath);
-                await fs.writeFile(colPath, collection.serialize());
-            }
-            await fs.ensureFile(this.manifestPath);
-            await fs.writeFile(this.manifestPath, cbor.encode(manifest));
+            await this.save();
             this.startSave();
         }, this.saveInterval);
     }
